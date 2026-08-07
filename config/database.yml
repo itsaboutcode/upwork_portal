@@ -1,0 +1,19 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  username: <%= ENV.fetch("DATABASE_USERNAME") { "fortex" } %>
+  password: <%= ENV.fetch("DATABASE_PASSWORD") { "fortex_local_postgres" } %>
+  host: <%= ENV.fetch("DATABASE_HOST") { "fortex-postgres" } %>
+
+development:
+  <<: *default
+  database: upwork_development
+
+test:
+  <<: *default
+  database: upwork_test
+
+production:
+  <<: *default
+  database: upwork_production

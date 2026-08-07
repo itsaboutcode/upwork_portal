@@ -1,0 +1,80 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: upwork_production
+      POSTGRES_USER: ${DATABASE_USERNAME:-upwork}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-upwork_local_postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME:-upwork}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+
+  redis:
+    image: redis:8-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: upwork-dashboard:latest
+    command: ["./bin/rails", "server", "-b", "0.0.0.0"]
+    environment:
+      RAILS_ENV: production
+      DATABASE_HOST: db
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-upwork}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-upwork_local_postgres}
+      REDIS_URL: redis://redis:6379/0
+      BASE_URL: ${BASE_URL:-http://localhost:3000}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-changeme}
+      UPWORK_CLIENT_ID: ${UPWORK_CLIENT_ID:-}
+      UPWORK_CLIENT_SECRET: ${UPWORK_CLIENT_SECRET:-}
+      ADMIN_SEED_EMAIL: ${ADMIN_SEED_EMAIL:-admin@example.com}
+      ADMIN_SEED_PASSWORD: ${ADMIN_SEED_PASSWORD:-}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+  sidekiq:
+    image: upwork-dashboard:latest
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      RAILS_ENV: production
+      DATABASE_HOST: db
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-upwork}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-upwork_local_postgres}
+      REDIS_URL: redis://redis:6379/0
+      BASE_URL: ${BASE_URL:-http://localhost:3000}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-changeme}
+      UPWORK_CLIENT_ID: ${UPWORK_CLIENT_ID:-}
+      UPWORK_CLIENT_SECRET: ${UPWORK_CLIENT_SECRET:-}
+    command: ["/bin/sh", "-lc", "bundle exec rails db:prepare && bundle exec sidekiq -C config/sidekiq.yml"]
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:

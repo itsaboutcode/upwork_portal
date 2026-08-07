@@ -1,0 +1,19 @@
+# config/sidekiq.yml
+:concurrency: 5
+:queues:
+  - default
+  - jobs
+  - proposals
+
+:scheduler:
+  :schedule:
+    sync_proposals:
+      cron: '0 */4 * * *'   # Runs every 1 hour
+      class: Cron::SyncProposals
+    sync_jobs:
+      cron: '*/5 * * * *'   # Runs after every 5 minutes
+      class: Cron::SyncJobs
+
+    refresh_access_tokens:
+      cron: "0 0 1 * * *"   # Runs at 1:00 am
+      class: Cron::RefreshAccessTokens
