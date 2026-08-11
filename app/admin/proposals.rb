@@ -1,3 +1,5 @@
+# NOTE: Intentionally commented out to disable proposals admin UI while keeping implementation for rollback.
+=begin
 ActiveAdmin.register Proposal do
   actions :all, except: [:batch_actions]
 
@@ -74,3 +76,4 @@ ActiveAdmin.register Proposal do
   end
 end
 end
+=end

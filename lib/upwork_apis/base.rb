@@ -25,7 +25,9 @@ module UpworkApis
     end
 
     def call
-      graphql.execute(params)
+      UpworkApis::RateLimiter.execute do
+        graphql.execute(params)
+      end
     end
 
     # Get available fields for a specific type
@@ -53,7 +55,9 @@ module UpworkApis
 
     # Execute the introspection query to get fields
     def introspection_query
-      graphql.execute(introspection_params)
+      UpworkApis::RateLimiter.execute do
+        graphql.execute(introspection_params)
+      end
     end
 
     private

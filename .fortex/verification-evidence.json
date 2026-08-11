@@ -1,0 +1,23 @@
+{
+  "checks": {
+    "coverage": {
+      "durationMilliseconds": 2,
+      "exitCode": 0,
+      "failureKind": null,
+      "observedAt": "2026-08-11T14:44:43.431175Z",
+      "repositoryDigest": "sha256:9d7d8fcb29bb00a8f903e3ce5eb5a4d44c24c805815ca3930705d9b0069ac866",
+      "status": "passed"
+    },
+    "source": {
+      "durationMilliseconds": 5,
+      "exitCode": 0,
+      "failureKind": null,
+      "observedAt": "2026-08-11T14:44:43.263191Z",
+      "repositoryDigest": "sha256:9d7d8fcb29bb00a8f903e3ce5eb5a4d44c24c805815ca3930705d9b0069ac866",
+      "status": "passed"
+    }
+  },
+  "copyright": "Copyright (c) 2026 Fortex Solutions. All rights reserved.",
+  "repositoryDigest": "sha256:9d7d8fcb29bb00a8f903e3ce5eb5a4d44c24c805815ca3930705d9b0069ac866",
+  "schemaVersion": 1
+}

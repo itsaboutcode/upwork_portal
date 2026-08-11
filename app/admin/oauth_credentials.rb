@@ -24,7 +24,7 @@ ActiveAdmin.register OauthCredential do
     column "Actions" do |o|
       safe_join([
         link_to("Re-Sync Account", "/auth/upwork", method: :get, data: { confirm: "Are you sure?" }),
-        link_to("Fetch Proposals", fetch_proposals_admin_proposals_path(access_token: o.access_token), method: :get, data: { confirm: "Are you sure?" }),
+        # link_to("Fetch Proposals", fetch_proposals_admin_proposals_path(access_token: o.access_token), method: :get, data: { confirm: "Are you sure?" }),
       ], " | ")
     end
 

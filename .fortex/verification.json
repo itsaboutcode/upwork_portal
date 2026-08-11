@@ -1,0 +1,11 @@
+{
+  "copyright": "Copyright (c) 2026 Fortex Solutions. All rights reserved.",
+  "checks": {
+    "source": [
+      "true"
+    ],
+    "coverage": [
+      "true"
+    ]
+  }
+}

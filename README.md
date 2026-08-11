@@ -27,9 +27,16 @@ Required app variables:
 
 Upwork/OAuth variables:
 
-- `BASE_URL` (for redirects and asset host, e.g. `http://localhost:3000` locally or your public domain)
+- `BASE_URL` (for redirects and asset host, e.g. `http://localhost` locally or your public domain)
 - `UPWORK_CLIENT_ID`
 - `UPWORK_CLIENT_SECRET`
+
+Reverse proxy TLS behavior:
+
+- TLS is intentionally disabled in this environment.
+- To enable HTTPS for production, uncomment the HTTPS server block in `nginx/default.conf`
+  and mount valid certs at `./nginx/certs/fullchain.pem` and `./nginx/certs/privkey.pem`
+  and then switch `BASE_URL=https://...`.
 
 Admin bootstrap variables:
 
@@ -77,8 +84,10 @@ docker compose up -d --build
 ```
 
 2. Open app
+- HTTP: `http://localhost`
+- If you keep defaults, Nginx proxies to Rails on internal port `3000`.
 
-- `http://localhost:3000`
+- `http://localhost`
 
 3. Run one-off setup command if needed
 
@@ -113,7 +122,7 @@ Set in Upwork developer app:
 
 If running locally:
 
-- `http://localhost:3000/auth/upwork/callback`
+- `http://localhost/auth/upwork/callback`
 
 ## 8) Start Sidekiq worker
 
@@ -150,3 +159,51 @@ sudo systemctl status redis
   - upwork callback URL
   - `UPWORK_CLIENT_ID`
   - `UPWORK_CLIENT_SECRET`
+
+## 11) Clean DB and reseed
+
+You can fully rebuild local data for a clean start and then seed again.
+
+### Docker stack (recommended for this project)
+
+- Full wipe + reseed (data-loss operation)
+  - Stops and recreates local DB volume and then runs migrations + seed.
+  - This removes `postgres_data` (and `redis_data`) by design.
+
+```bash
+cp .env.example .env
+# Set ADMIN_SEED_PASSWORD (required for production-mode seed of admin users)
+docker compose down
+docker compose down -v
+docker compose --env-file ./.env up -d --build
+docker compose run --rm app bundle exec rails db:prepare
+docker compose run --rm app bundle exec rails db:seed
+```
+
+- Reset without deleting volumes (preserves existing DB/container data shape)
+  - Useful when you want to reload schema/seed but keep current environment volumes.
+
+```bash
+docker compose run --rm app bundle exec rails db:reset
+```
+
+### Local (non-Docker) Rails run
+
+- Full clean reset (drops/recreates/migrates/seeds)
+
+```bash
+bundle exec rails db:reset
+```
+
+- Migrate + seed flow
+
+```bash
+bundle exec rails db:migrate
+bundle exec rails db:seed
+```
+
+### Seeding notes
+
+- `db/seeds.rb` in production-like env (`RAILS_ENV=production`) requires `ADMIN_SEED_PASSWORD` to create admin users.
+- If `ADMIN_SEED_PASSWORD` is missing in production, seeding continues but admin creation is skipped (a warning is printed).
+- Ensure `.env` values match compose DB credentials before running reset/seeds (`DATABASE_HOST`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`).

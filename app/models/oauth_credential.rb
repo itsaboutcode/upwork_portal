@@ -28,15 +28,17 @@ class OauthCredential < ApplicationRecord
   end
 
   def force_refresh
-    response = HTTParty.post('https://www.upwork.com/api/v3/oauth2/token', {
-      body: {
-        grant_type: 'refresh_token',
-        refresh_token: refresh_token,
-        client_id: ENV.fetch('UPWORK_CLIENT_ID'),
-        client_secret: ENV.fetch('UPWORK_CLIENT_SECRET'),
-      },
-      headers: { 'Content-Type' => 'application/x-www-form-urlencoded' }
-    })
+    response = UpworkApis::RateLimiter.execute do
+      HTTParty.post('https://www.upwork.com/api/v3/oauth2/token', {
+        body: {
+          grant_type: 'refresh_token',
+          refresh_token: refresh_token,
+          client_id: ENV.fetch('UPWORK_CLIENT_ID'),
+          client_secret: ENV.fetch('UPWORK_CLIENT_SECRET'),
+        },
+        headers: { 'Content-Type' => 'application/x-www-form-urlencoded' }
+      })
+    end
 
     if response.success?
       new_access_token = response.parsed_response['access_token']

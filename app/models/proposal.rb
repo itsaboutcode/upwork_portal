@@ -11,7 +11,7 @@ class Proposal < ApplicationRecord
   ]
 
   before_save :prefil_columns
-  after_commit :fetch_published_datatime
+  after_commit :enqueue_published_date_time_fetch
 
   def self.ransackable_attributes(auth_object = nil)
     %w[id name created_at updated_at status published_date_time submitted_at job_status]
@@ -22,13 +22,12 @@ class Proposal < ApplicationRecord
     []
   end
 
-  def fetch_published_datatime
-    oauth_credentail = OauthCredential.find_by(name: name)
-    return if oauth_credentail.blank?
+  def enqueue_published_date_time_fetch
+    return if OauthCredential.find_by(name: name).blank?
     return if published_date_time.present?
+    return if data.blank?
 
-    response = UpworkApis::MarketplaceJobPostingsContents.new(oauth_credentail.access_token).call([data["marketplaceJobPosting"]["id"]])
-    update_column(:published_date_time, response["data"]["marketplaceJobPostingsContents"][0]["publishedDateTime"].in_time_zone)
+    FetchProposalPublishedDateTimeJob.perform_async(id)
   end
 
   private

@@ -1,26 +1,40 @@
 module UpworkApis
   class Proposals < Base
+    MAX_PAGES_PER_STATUS = Integer(ENV.fetch("UPWORK_MAX_PAGES_PER_PROPOSAL_STATUS", 3))
+    MAX_PROPOSALS_PER_STATUS = Integer(ENV.fetch("UPWORK_MAX_PROPOSALS_PER_STATUS", 100))
+
     def call      
       all_proposals = []
       Proposal::STATUSES.each do |status|
         cursor = nil
-        status_specific_proposals = []
+        status_count = 0
+        pages_for_status = 0
         loop do
-          response = graphql.execute(my_proposals_query(status, cursor))
+          pages_for_status += 1
+          break if status_count >= MAX_PROPOSALS_PER_STATUS
+
+          response = UpworkApis::RateLimiter.execute do
+            graphql.execute(my_proposals_query(status, cursor))
+          end
           puts "========================"
           puts "Fetched #{response}"
           puts "========================"
+          break if response.blank?
 
           status_specific_proposals = response.dig("data", "vendorProposals", "edges")
+          status_specific_proposals = [] if status_specific_proposals.blank?
           all_proposals.concat(status_specific_proposals)
+          status_count += status_specific_proposals.size
 
           page_info = response.dig("data", "vendorProposals", "pageInfo")
-          break if response["data"]["vendorProposals"]["totalCount"].nil?
-          break unless page_info["hasNextPage"]
+          total_count = response.dig("data", "vendorProposals", "totalCount")
+          break if total_count.nil? || status_specific_proposals.empty?
+          break unless page_info&.fetch("hasNextPage", false)
 
           cursor = page_info["endCursor"]
 
-          break if all_proposals.size >= 100 
+          break if status_count >= MAX_PROPOSALS_PER_STATUS
+          break if pages_for_status >= MAX_PAGES_PER_STATUS
         end
       end
 
