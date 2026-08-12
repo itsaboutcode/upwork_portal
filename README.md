@@ -217,3 +217,8 @@ Role behavior for seeded users:
 - OAuth Credentials remain restricted to `admin@example.com`, and Sidekiq remains restricted to application administrators.
 - Self-service signup is disabled for both normal and admin accounts.
 - Running `db:seed` reconciles existing seeded accounts to the configured passwords and roles; it does not only create missing records.
+## Remote jobs mirror
+
+The Sidekiq jobs synchronization mirrors only normalized `jobs` rows to a separately configured PostgreSQL database. Configure `REMOTE_JOBS_DATABASE_HOST`, `REMOTE_JOBS_DATABASE_PORT`, `REMOTE_JOBS_DATABASE_NAME`, `REMOTE_JOBS_DATABASE_USERNAME`, `REMOTE_JOBS_DATABASE_PASSWORD`, and `REMOTE_JOBS_DATABASE_SSLMODE` in the ignored `.env` file.
+
+On synchronization, the worker creates `public.jobs` and its unique `upwork_job_id` index when absent. It does not create or copy tags, job-tag relationships, users, proposals, or OAuth credentials. An incompatible existing table or remote connection failure fails that synchronization run without deleting local or remote data.
