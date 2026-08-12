@@ -1,0 +1,1 @@
+{"assignments": [{"agent": "", "effort": "low", "model": "gpt-5.4-mini", "status": "requested", "task": "Git workflow", "usage": {}}], "root": {"model": "gpt-5.3-codex-spark", "status": "observed", "task": "core work", "usage": {}}}

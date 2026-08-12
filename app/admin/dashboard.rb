@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 ActiveAdmin.register_page "Dashboard" do
   menu priority: 1, label: proc { I18n.t("active_admin.dashboard") }
 
@@ -10,13 +11,12 @@ ActiveAdmin.register_page "Dashboard" do
       end
     end
 
-    # Add the Sidekiq panel to the dashboard
+    # Add the Sidekiq panel to the dashboard for every authenticated application user.
     columns do
       column do
         panel "Sidekiq Monitoring" do
           div do
-            # This will link to the Sidekiq web UI
-            link_to 'Go to Sidekiq Dashboard', '/sidekiq', class: 'button'
+            link_to "Go to Sidekiq Dashboard", "/sidekiq", class: "button"
           end
         end
       end

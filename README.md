@@ -42,6 +42,8 @@ Admin bootstrap variables:
 
 - `ADMIN_SEED_EMAIL` (optional, defaults to `admin@example.com`)
 - `ADMIN_SEED_PASSWORD` (required in production for seed execution)
+- `NORMAL_SEED_EMAIL` (optional; normal user bootstrap for non-admin login at `/users/sign_in`)
+- `NORMAL_SEED_PASSWORD` (required with `NORMAL_SEED_EMAIL` in production)
 
 Notes:
 
@@ -207,3 +209,11 @@ bundle exec rails db:seed
 - `db/seeds.rb` in production-like env (`RAILS_ENV=production`) requires `ADMIN_SEED_PASSWORD` to create admin users.
 - If `ADMIN_SEED_PASSWORD` is missing in production, seeding continues but admin creation is skipped (a warning is printed).
 - Ensure `.env` values match compose DB credentials before running reset/seeds (`DATABASE_HOST`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`).
+
+Role behavior for seeded users:
+- `ADMIN_SEED_*` creates an admin user with Dashboard, Jobs, Tags, Proposals, OAuth Credentials, and Sidekiq access.
+- `NORMAL_SEED_*` creates a normal user with Dashboard, Jobs, and Tags access in `/admin`.
+- After sign-in, both account types are sent to the shared ActiveAdmin dashboard at `/admin`.
+- OAuth Credentials remain restricted to `admin@example.com`, and Sidekiq remains restricted to application administrators.
+- Self-service signup is disabled for both normal and admin accounts.
+- Running `db:seed` reconciles existing seeded accounts to the configured passwords and roles; it does not only create missing records.
