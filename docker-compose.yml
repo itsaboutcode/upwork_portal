@@ -42,6 +42,8 @@ services:
       REDIS_URL: redis://redis:6379/0
       BASE_URL: ${BASE_URL:-http://localhost}
       HOST: ${HOST:-localhost}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-}
+      SERVER_PUBLIC_IP: ${SERVER_PUBLIC_IP:-}
       SECRET_KEY_BASE: ${SECRET_KEY_BASE:-changeme}
       UPWORK_CLIENT_ID: ${UPWORK_CLIENT_ID:-}
       UPWORK_CLIENT_SECRET: ${UPWORK_CLIENT_SECRET:-}
