@@ -2,9 +2,23 @@ require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
-  config.hosts << "13.61.15.82"   # Your public IP
-  config.hosts << "localhost"       # Localhost
-  config.hosts << "127.0.0.1"       # Loopback address
+  # Allow-list hostnames/IPs for this environment.
+  # Keep loopback entries for container/local health checks and local debugging.
+  config.hosts << "localhost"
+  config.hosts << "127.0.0.1"
+
+  # Prefer explicit env vars for deployment hosts:
+  # - HOST: legacy single host (single value)
+  # - SERVER_PUBLIC_IP: single public IP
+  # - ALLOWED_HOSTS: comma-separated host list (e.g., 159.89.92.27,dashboard.example.com)
+  allowed_hosts = [
+    ENV["HOST"],
+    ENV["SERVER_PUBLIC_IP"]
+  ]
+  allowed_hosts.concat(ENV["ALLOWED_HOSTS"].to_s.split(",").map(&:strip))
+  allowed_hosts.compact.map(&:strip).reject(&:empty?).each do |host|
+    config.hosts << host
+  end
 # Code is not reloaded between requests.
   config.enable_reloading = false
 
