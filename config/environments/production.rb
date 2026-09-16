@@ -7,6 +7,9 @@ Rails.application.configure do
   config.hosts << "localhost"
   config.hosts << "127.0.0.1"
 
+  # Allow requests to the production server's public IP.
+  config.hosts << "159.89.231.140"
+
   # Prefer explicit env vars for deployment hosts:
   # - HOST: legacy single host (single value)
   # - SERVER_PUBLIC_IP: single public IP
