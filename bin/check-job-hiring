@@ -1,0 +1,8 @@
+#!/bin/sh
+# Copyright (c) 2026 Fortex Solutions. All rights reserved.
+# Runs isolated hiring contracts and enforces 90% coverage for changed model hiring declarations and the full API/worker files.
+# Parameters: none. Returns: zero on passing assertions and coverage, nonzero otherwise.
+# Errors: requires Ruby with standard Minitest and Coverage; no credentials or database required.
+set -eu
+cd "$(dirname "$0")/.."
+exec ruby test/unit/job_hiring_contract_test.rb

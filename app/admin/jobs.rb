@@ -1,3 +1,6 @@
+# Copyright (c) 2026 Fortex Solutions. All rights reserved.
+
+## Presents client history separately from verified hiring on each job.
 ActiveAdmin.register Job do
   actions :all, except: [:batch_actions]
 
@@ -7,7 +10,9 @@ ActiveAdmin.register Job do
   filter :applied
   filter :enterprise
   filter :verification_status
-  filter :hired
+  # Use verified counts rather than historical boolean values on legacy rows.
+  filter :job_hiring_status, as: :select, label: "Hired on this job",
+         collection: [["Yes", 1], ["No", 0], ["Unknown", -1]]
   filter :team_type, as: :select, collection: -> { Job.pluck(:team_type).uniq }
   filter :tags, as: :select, 
                 collection: -> { Tag.all.collect { |t| [t.name, t.id] } },
@@ -46,7 +51,9 @@ ActiveAdmin.register Job do
     column :country
     column :applied
     column :enterprise
-    column :total_hires
+    column("Client total hires") { |job| job.total_hires }
+    column("Hires on this job") { |job| job.job_hires_count || "Unknown" }
+    column("Hired on this job") { |job| job.hiring_status }
     column :total_spent do |job|
       "$#{job.total_spent.to_f}"
     end
@@ -85,6 +92,22 @@ ActiveAdmin.register Job do
     column "Actions" do |job|
       link_to 'View', admin_job_path(job)
     end
+  end
+
+  # Preserve job details while making unavailable activity explicit on legacy rows.
+  show do
+    attributes_table do
+      rows :data, :created_at, :updated_at, :upwork_job_id, :applied,
+           :published_date_time, :enterprise
+      row("Client total hires") { |job| job.total_hires }
+      rows :total_spent, :verification_status
+      row("Total applicants") { |job| job.total_applicants || "Unknown" }
+      row("Invited to interview") { |job| job.job_interviews_count || "Unknown" }
+      row("Hires on this job") { |job| job.job_hires_count || "Unknown" }
+      row("Hired on this job") { |job| job.hiring_status }
+      rows :team_name, :team_type, :country
+    end
+    active_admin_comments
   end
 
   form do |f|

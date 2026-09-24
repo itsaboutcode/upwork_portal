@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Fortex Solutions. All rights reserved.
 require "test_helper"
 require "minitest/mock"
 
@@ -71,6 +72,10 @@ class CronSyncJobsTest < ActiveSupport::TestCase
     tag = Tag.create!(name: "Ruby", active: true)
     credential = Object.new
     credential.define_singleton_method(:fetch_or_refresh_access_token) { "test-token" }
+    # Supplies independent hiring and interview activity without calling the external API.
+    activity_client = Object.new
+    # Parameters: job_id - requested posting. Returns: zero hires and three interview invitations. Errors: none.
+    activity_client.define_singleton_method(:call) { |_job_id| {hires: 0, interviews: 3} }
     client = Object.new
     payload = fetched_job_payload
     client.define_singleton_method(:call) { |_tag_name| [{ "node" => payload }] }
@@ -78,7 +83,9 @@ class CronSyncJobsTest < ActiveSupport::TestCase
     RemoteJobsRepository.stub(:from_env, repository) do
       OauthCredential.stub(:first, credential) do
         Tag.stub(:active, [tag]) do
-          UpworkApis::MarketplaceJobs.stub(:new, ->(*) { client }) { Cron::SyncJobs.new.perform }
+          UpworkApis::JobActivity.stub(:new, ->(*) { activity_client }) do
+            UpworkApis::MarketplaceJobs.stub(:new, ->(*) { client }) { Cron::SyncJobs.new.perform }
+          end
         end
       end
     end
@@ -88,6 +95,10 @@ class CronSyncJobsTest < ActiveSupport::TestCase
     assert_equal 1, repository.upserts.length
     assert_equal "remote-job-1", repository.upserts.first.upwork_job_id
     assert_equal "Pakistan", repository.upserts.first.country
+    assert_equal 155, repository.upserts.first.total_applicants
+    assert_equal 3, repository.upserts.first.job_interviews_count
+    assert_equal 0, repository.upserts.first.job_hires_count
+    assert_equal false, repository.upserts.first.hired
   end
 
   ## Verifies a remote persistence failure remains visible and still closes the repository.
@@ -97,6 +108,10 @@ class CronSyncJobsTest < ActiveSupport::TestCase
     tag = Tag.create!(name: "Ruby", active: true)
     credential = Object.new
     credential.define_singleton_method(:fetch_or_refresh_access_token) { "test-token" }
+    # Supplies independent hiring and interview activity without calling the external API.
+    activity_client = Object.new
+    # Parameters: job_id - requested posting. Returns: zero hires and three interview invitations. Errors: none.
+    activity_client.define_singleton_method(:call) { |_job_id| {hires: 0, interviews: 3} }
     client = Object.new
     payload = fetched_job_payload
     client.define_singleton_method(:call) { |_tag_name| [{ "node" => payload }] }
@@ -105,7 +120,9 @@ class CronSyncJobsTest < ActiveSupport::TestCase
       RemoteJobsRepository.stub(:from_env, repository) do
         OauthCredential.stub(:first, credential) do
           Tag.stub(:active, [tag]) do
-            UpworkApis::MarketplaceJobs.stub(:new, ->(*) { client }) { Cron::SyncJobs.new.perform }
+            UpworkApis::JobActivity.stub(:new, ->(*) { activity_client }) do
+              UpworkApis::MarketplaceJobs.stub(:new, ->(*) { client }) { Cron::SyncJobs.new.perform }
+            end
           end
         end
       end
@@ -124,10 +141,11 @@ class CronSyncJobsTest < ActiveSupport::TestCase
     {
       "id" => "remote-job-1",
       "applied" => false,
+      "totalApplicants" => 155,
       "publishedDateTime" => "2026-08-12T10:00:00Z",
       "enterprise" => false,
       "client" => {
-        "totalHires" => 0,
+        "totalHires" => 516,
         "totalSpent" => { "displayValue" => "100" },
         "verificationStatus" => true,
         "location" => { "country" => "Pakistan" }
