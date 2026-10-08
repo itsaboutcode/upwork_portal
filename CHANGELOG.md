@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- [No issue] Add a guarded, manual SQL repair and rollout/rollback instructions for oversized job-insert notifications; notify with the row ID while preserving full job data.
+
 - [No issue] Show total applicants and invitations to interview on job details, preserving zero and unavailable counts and fetching interviews in the existing job-activity request.
 
 - [No issue] Correct job hiring status to use job-specific Upwork activity; distinguish client lifetime hires and show unavailable or legacy activity as Unknown. Synchronization mirrors verified counts and nullable status.

@@ -22,6 +22,10 @@ Mirror each successfully fetched and normalized Upwork job to a separately confi
 5. No non-job application table or row is copied remotely.
 6. Missing remote configuration fails before a connection is attempted.
 7. Remote errors remain visible while committed local job data is retained for the next idempotent run.
+8. Where a database job-insert notification trigger is configured, its payload
+   contains only the remote row ID; full job JSON remains stored in the table.
+   Consumers fetch the row by that ID after commit. The trigger repair is an
+   explicit operator action, not automatic mirror bootstrap.
 
 ## Test matrix
 
@@ -40,4 +44,4 @@ Mirror each successfully fetched and normalized Upwork job to a separately confi
 - Rollback removes those variables and the mirror call; remote data is left untouched.
 - Runtime bootstrap uses no `DROP`, `TRUNCATE`, Rails migration, or historical backfill.
 - A live smoke test requires separate authorization because it changes an external database.
-
+- For `pg_notify` payload-size failures, see [the notification repair runbook](../job-notification-repair.md).

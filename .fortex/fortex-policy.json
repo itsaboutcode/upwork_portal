@@ -1,0 +1,91 @@
+{
+  "copyright": "Copyright (c) 2026 Fortex Solutions. All rights reserved.",
+  "schemaVersion": 1,
+  "activityLogging": {
+    "enabled": false,
+    "modelReportsEnabled": false,
+    "contentMode": "metadata",
+    "commandDetail": "category",
+    "maxContentCharacters": 500,
+    "retentionDays": 90,
+    "maxFileBytes": 2000000,
+    "maxRotatedFiles": 5
+  },
+  "workflow": {
+    "defaultProfile": "standard",
+    "turnCheckpointActions": 40,
+    "minimumProfiles": {
+      "security": "full",
+      "migration": "full",
+      "release": "full",
+      "production": "full",
+      "tenant": "full"
+    }
+  },
+  "orchestration": {
+    "taskLedger": {
+      "enabled": false
+    },
+    "verification": {
+      "evidenceEnabled": false,
+      "requiredChecks": [],
+      "checks": {}
+    },
+    "workspaceImpact": {
+      "mode": "notConfigured",
+      "reason": ""
+    }
+  },
+  "modelRouting": {
+    "enabled": true,
+    "codexRoot": {
+      "core": {
+        "model": "gpt-5.6-terra",
+        "reasoning": "medium"
+      },
+      "highJudgment": {
+        "model": "gpt-5.6-sol",
+        "reasoning": "high"
+      },
+      "routine": {
+        "model": "gpt-5.6-luna",
+        "reasoning": "low"
+      }
+    },
+    "codexSpecialists": {
+      "sourceDocumentation": {
+        "model": "gpt-5.6-luna",
+        "reasoning": "low"
+      },
+      "gitWorkflow": {
+        "model": "gpt-5.6-luna",
+        "reasoning": "low"
+      },
+      "testGeneration": {
+        "model": "gpt-5.6-luna",
+        "reasoning": "medium"
+      }
+    },
+    "claudeRoot": {
+      "highJudgment": "opus",
+      "routine": "haiku"
+    },
+    "claudeSpecialists": {
+      "sourceDocumentation": {
+        "agent": "fortex-codex:source-documenter",
+        "model": "haiku"
+      },
+      "gitWorkflow": {
+        "agent": "fortex-codex:git-assistant",
+        "model": "haiku"
+      },
+      "testGeneration": {
+        "agent": "fortex-codex:test-generator",
+        "model": "sonnet"
+      }
+    }
+  },
+  "enforcement": {
+    "planApprovalRequired": true
+  }
+}
